@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 15,
+            "activePatchIndex": 18,
             "patches": [
                 {
                     "date": 1647309532880,
@@ -68,6 +68,18 @@
                 {
                     "date": 1647311396085,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -120,10 +120,10 @@\n \n     def get_similarity(self, user_id: int, movie_id: int) -> float:\n         return self.model.predict(uid=user_id, iid=movie_id).est\n \n-def make_model():\n-    movie_id_to_name, movie_name_to_id = create_movie_id_mappings_from_file('dataset_partition.csv')\n+def make_model(train_path):\n+    movie_id_to_name, movie_name_to_id = create_movie_id_mappings_from_file(train_path)\n     train_data = create_dataset_from_file_with_mapping(train_path, movie_name_to_id)\n     baseline = Surprise_Algo(num_recommendations=20)\n     baseline.train(train_data)\n     return baseline, movie_name_to_id\n"
+                },
+                {
+                    "date": 1647311802309,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -44,10 +44,10 @@\n     \"\"\"\n     Create mappings from movie names to movie ids and back.\n     Preserves the order that the movie ids are given in.\n     \"\"\"\n-    movie_name_to_id : Dict[str, int] = dict()\n-    movie_id_to_name : Dict[int, str] = dict()\n+    movie_name_to_id : Dict[str, int] = defaultdict(-1)\n+    movie_id_to_name : Dict[int, str] = defaultdict(-1)\n     # unlike set(), dict is guaranteed to preserve\n     # insertion order in python3.7+\n     unique_movie_names = list(dict.fromkeys(movie_ids)) \n     for id, movie in enumerate(unique_movie_names):\n"
+                },
+                {
+                    "date": 1647311810005,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -45,9 +45,9 @@\n     Create mappings from movie names to movie ids and back.\n     Preserves the order that the movie ids are given in.\n     \"\"\"\n     movie_name_to_id : Dict[str, int] = defaultdict(-1)\n-    movie_id_to_name : Dict[int, str] = defaultdict(-1)\n+    movie_id_to_name : Dict[int, str] = defaultdict(\"\")\n     # unlike set(), dict is guaranteed to preserve\n     # insertion order in python3.7+\n     unique_movie_names = list(dict.fromkeys(movie_ids)) \n     for id, movie in enumerate(unique_movie_names):\n"
+                },
+                {
+                    "date": 1647311815747,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -44,10 +44,10 @@\n     \"\"\"\n     Create mappings from movie names to movie ids and back.\n     Preserves the order that the movie ids are given in.\n     \"\"\"\n-    movie_name_to_id : Dict[str, int] = defaultdict(-1)\n-    movie_id_to_name : Dict[int, str] = defaultdict(\"\")\n+    movie_name_to_id : Dict[str, int] = dict()\n+    movie_id_to_name : Dict[int, str] = dict()\n     # unlike set(), dict is guaranteed to preserve\n     # insertion order in python3.7+\n     unique_movie_names = list(dict.fromkeys(movie_ids)) \n     for id, movie in enumerate(unique_movie_names):\n"
                 }
             ],
             "date": 1647309532880,

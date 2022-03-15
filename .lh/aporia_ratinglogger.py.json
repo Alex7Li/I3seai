@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 48,
+            "activePatchIndex": 55,
             "patches": [
                 {
                     "date": 1647309347787,
@@ -200,6 +200,34 @@
                 {
                     "date": 1647311512737,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,10 +32,9 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_id_to_model_id = model.make_model('dataset_partition.csv')\n \n for message in create_consumer():\n-    print(message.value)\n-    data = message.value.split(',')\n+    data = message.value.decode().split(',')\n     if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n         movie_id, rating_raw = data[-1][10:].split('=')\n"
+                },
+                {
+                    "date": 1647311853256,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -47,11 +47,14 @@\n             \"created_at\": time,\n             \"user_id\": user_id,\n             \"movie_name\": movie_id,\n         }\n-        predicted_rating = rec_model.get_similarity(\n-            user_id, movie_id_to_model_id[movie_id]\n-        ) * 4 + 1\n+        if movie_id in movie_id_to_model_id:\n+            predicted_rating = rec_model.get_similarity(\n+                user_id, movie_id_to_model_id[movie_id]\n+            ) * 4 + 1\n+        else: # Not in model training set\n+            predicted_rating = None\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n         apr_actual_dict = {\n"
+                },
+                {
+                    "date": 1647311859470,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -51,9 +51,9 @@\n         if movie_id in movie_id_to_model_id:\n             predicted_rating = rec_model.get_similarity(\n                 user_id, movie_id_to_model_id[movie_id]\n             ) * 4 + 1\n-        else: # Not in model training set\n+        else: # Movie is not in model training set\n             predicted_rating = None\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n"
+                },
+                {
+                    "date": 1647311877225,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -53,8 +53,9 @@\n                 user_id, movie_id_to_model_id[movie_id]\n             ) * 4 + 1\n         else: # Movie is not in model training set\n             predicted_rating = None\n+\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n         apr_actual_dict = {\n@@ -64,8 +65,8 @@\n         apr_model.log_prediction(\n             id=apr_prediction_id,\n             features=apr_features_dict,\n             predictions=apr_prediction_dict,\n-            actual=apr_actual_dict,\n+            actuals=apr_actual_dict,\n         )\n \n         apr_model.flush()\n"
+                },
+                {
+                    "date": 1647312253978,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -15,9 +15,9 @@\n     apr_model_type = \"ranking\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n-        \"movie_name\": \"categorical\",\n+        \"movie_name\": \"string\",\n     }\n     apr_predictions_schema = {\n         'rating': 'numeric'\n     }\n"
+                },
+                {
+                    "date": 1647312275615,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,9 +10,9 @@\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"sandbox-version2\"\n+    apr_model_version = \"sandbox-version3\"\n     apr_model_type = \"ranking\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n"
+                },
+                {
+                    "date": 1647312315558,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -38,9 +38,8 @@\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n         movie_id, rating_raw = data[-1][10:].split('=')\n         true_rating = int(rating_raw)\n-        print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n         apr_features_dict = {\n@@ -60,8 +59,9 @@\n         }\n         apr_actual_dict = {\n             \"rating\": true_rating,\n         }\n+        print(f'read rating {message.value}, {predicted_rating=} {true_rating=}')\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n             features=apr_features_dict,\n"
+                },
+                {
+                    "date": 1647312498836,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n from eat_kafka import get_data\n import model\n from datetime import datetime\n from consumer_factory import create_consumer\n-\n+# Evaluate performance of the model\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_ratinglogger():\n"
                 }
             ],
             "date": 1647309347787,
