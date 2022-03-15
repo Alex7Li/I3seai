@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 1,
+            "activePatchIndex": 48,
             "patches": [
                 {
                     "date": 1647309347787,
@@ -12,6 +12,194 @@
                 {
                     "date": 1647309367492,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,4 +28,26 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n+\n+apr_prediction_id = \"pred_1337\"\n+\n+apr_features_dict = {\n+    \"amount\": 3918,\n+    \"owner\": \"John Doe\",\n+    \"is_new\": \"true\",\n+    \"created_at\": \"2021-01-17\",\n+}\n+\n+apr_prediction_dict = {\n+    \"approved\": \"true\",\n+    \"confidence\": 0.81,\n+}\n+\n+apr_model.log_prediction(\n+    id=apr_prediction_id,\n+    features=apr_features_dict,\n+    predictions=apr_prediction_dict,\n+)\n+\n+apr_model.flush()\n"
+                },
+                {
+                    "date": 1647309938368,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,11 +6,8 @@\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n-                environment=\"local-dev\", \n-                verbose=True)\n     apr_model_version = \"sandbox-version2\"\n     apr_model_type = \"ranking\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n"
+                },
+                {
+                    "date": 1647310149797,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,8 +26,14 @@\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n \n+train_path = 'dataset_partition.csv'\n+movie_id_to_name, movie_name_to_id = create_movie_id_mappings_from_file(train_path)\n+train_data = create_dataset_from_file_with_mapping(\n+train_path, movie_name_to_id)\n+baseline = Surprise_Algo(num_recommendations=20)\n+baseline.train(train_data)\n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n     \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310281216,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n import aporia\n-\n+import model\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_ratinglogger():\n@@ -25,15 +25,10 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n+recmodel, movie_id_to_name = model.make_model()\n \n-train_path = 'dataset_partition.csv'\n-movie_id_to_name, movie_name_to_id = create_movie_id_mappings_from_file(train_path)\n-train_data = create_dataset_from_file_with_mapping(\n-train_path, movie_name_to_id)\n-baseline = Surprise_Algo(num_recommendations=20)\n-baseline.train(train_data)\n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n     \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310302720,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -25,9 +25,9 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n-recmodel, movie_id_to_name = model.make_model()\n+rec_model, movie_name_to_id = model.make_model()\n \n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n"
+                },
+                {
+                    "date": 1647310343189,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,8 @@\n import aporia\n+from eat_kafka import get_data\n import model\n+from consumer_factory import create_consumer\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_ratinglogger():\n@@ -27,8 +29,9 @@\n     )\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n \n+\n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n     \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310358281,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,9 @@\n import aporia\n from eat_kafka import get_data\n import model\n from consumer_factory import create_consumer\n+\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_ratinglogger():\n@@ -28,10 +29,10 @@\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n+create_consumer('movie_reccomendation')\n \n-\n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n     \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310367409,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n-create_consumer('movie_reccomendation')\n+create_consumer('movie_recommendation')\n \n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n"
+                },
+                {
+                    "date": 1647310384650,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,10 +29,12 @@\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n-create_consumer('movie_recommendation')\n \n+for message in create_consumer():\n+    \n+\n apr_prediction_id = \"pred_1337\"\n \n apr_features_dict = {\n     \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310394186,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,8 @@\n import aporia\n from eat_kafka import get_data\n import model\n+import datetime\n from consumer_factory import create_consumer\n \n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n"
+                },
+                {
+                    "date": 1647310401104,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,27 +32,25 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n-    \n+    apr_prediction_id = \"pred_1337\"\n \n-apr_prediction_id = \"pred_1337\"\n+    apr_features_dict = {\n+        \"amount\": 3918,\n+        \"owner\": \"John Doe\",\n+        \"is_new\": \"true\",\n+        \"created_at\": \"2021-01-17\",\n+    }\n \n-apr_features_dict = {\n-    \"amount\": 3918,\n-    \"owner\": \"John Doe\",\n-    \"is_new\": \"true\",\n-    \"created_at\": \"2021-01-17\",\n-}\n+    apr_prediction_dict = {\n+        \"approved\": \"true\",\n+        \"confidence\": 0.81,\n+    }\n \n-apr_prediction_dict = {\n-    \"approved\": \"true\",\n-    \"confidence\": 0.81,\n-}\n+    apr_model.log_prediction(\n+        id=apr_prediction_id,\n+        features=apr_features_dict,\n+        predictions=apr_prediction_dict,\n+    )\n \n-apr_model.log_prediction(\n-    id=apr_prediction_id,\n-    features=apr_features_dict,\n-    predictions=apr_prediction_dict,\n-)\n-\n-apr_model.flush()\n+    apr_model.flush()\n"
+                },
+                {
+                    "date": 1647310444687,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,8 +32,10 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n+    data = message.split(',')\n+    if data[-1][:5] == '/rate'\n     apr_prediction_id = \"pred_1337\"\n \n     apr_features_dict = {\n         \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310449990,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,26 +33,26 @@\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n     data = message.split(',')\n-    if data[-1][:5] == '/rate'\n-    apr_prediction_id = \"pred_1337\"\n+    if data[-1][:5] == '/rate':\n+        apr_prediction_id = \"pred_1337\"\n \n-    apr_features_dict = {\n-        \"amount\": 3918,\n-        \"owner\": \"John Doe\",\n-        \"is_new\": \"true\",\n-        \"created_at\": \"2021-01-17\",\n-    }\n+        apr_features_dict = {\n+            \"amount\": 3918,\n+            \"owner\": \"John Doe\",\n+            \"is_new\": \"true\",\n+            \"created_at\": \"2021-01-17\",\n+        }\n \n-    apr_prediction_dict = {\n-        \"approved\": \"true\",\n-        \"confidence\": 0.81,\n-    }\n+        apr_prediction_dict = {\n+            \"approved\": \"true\",\n+            \"confidence\": 0.81,\n+        }\n \n-    apr_model.log_prediction(\n-        id=apr_prediction_id,\n-        features=apr_features_dict,\n-        predictions=apr_prediction_dict,\n-    )\n+        apr_model.log_prediction(\n+            id=apr_prediction_id,\n+            features=apr_features_dict,\n+            predictions=apr_prediction_dict,\n+        )\n \n-    apr_model.flush()\n+        apr_model.flush()\n"
+                },
+                {
+                    "date": 1647310468754,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,8 +34,9 @@\n \n for message in create_consumer():\n     data = message.split(',')\n     if data[-1][:5] == '/rate':\n+        time, user_id = data[0], data[1]\n         apr_prediction_id = \"pred_1337\"\n \n         apr_features_dict = {\n             \"amount\": 3918,\n"
+                },
+                {
+                    "date": 1647310526054,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,9 +32,9 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n-    data = message.split(',')\n+    data = message.value.split(',')\n     if data[-1][:5] == '/rate':\n         time, user_id = data[0], data[1]\n         apr_prediction_id = \"pred_1337\"\n \n"
+                },
+                {
+                    "date": 1647310558621,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,8 +34,9 @@\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1][:5] == '/rate':\n+        print('rating read')\n         time, user_id = data[0], data[1]\n         apr_prediction_id = \"pred_1337\"\n \n         apr_features_dict = {\n"
+                },
+                {
+                    "date": 1647310602984,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,9 +33,9 @@\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n     data = message.value.split(',')\n-    if data[-1][:5] == '/rate':\n+    if data[-1].startswith('GET /rate'):\n         print('rating read')\n         time, user_id = data[0], data[1]\n         apr_prediction_id = \"pred_1337\"\n \n"
+                },
+                {
+                    "date": 1647310624888,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,9 +34,9 @@\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n-        print('rating read')\n+        print(f'read rating {message.value}')\n         time, user_id = data[0], data[1]\n         apr_prediction_id = \"pred_1337\"\n \n         apr_features_dict = {\n"
+                },
+                {
+                    "date": 1647310642790,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,9 +36,9 @@\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n         time, user_id = data[0], data[1]\n-        apr_prediction_id = \"pred_1337\"\n+        apr_prediction_id = data[0] + \"_\" + data[1]\n \n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n"
+                },
+                {
+                    "date": 1647310649771,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,9 +36,9 @@\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n         time, user_id = data[0], data[1]\n-        apr_prediction_id = data[0] + \"_\" + data[1]\n+        apr_prediction_id = data[0] + data[1]\n \n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n"
+                },
+                {
+                    "date": 1647310658139,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -35,10 +35,10 @@\n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n+        apr_prediction_id = data[0] + data[1]\n         time, user_id = data[0], data[1]\n-        apr_prediction_id = data[0] + data[1]\n \n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n"
+                },
+                {
+                    "date": 1647310677442,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -37,9 +37,9 @@\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time, user_id = data[0], data[1]\n-\n+        time = datetime.fromisoformat(date[0])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310688974,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n import aporia\n from eat_kafka import get_data\n import model\n-import datetime\n+from datetime import datetime\n from consumer_factory import create_consumer\n \n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n@@ -37,9 +37,9 @@\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time, user_id = data[0], data[1]\n-        time = datetime.fromisoformat(date[0])\n+        time = datetime.fromisoformat(data[0])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310703276,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,10 +36,10 @@\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n-        time, user_id = data[0], data[1]\n         time = datetime.fromisoformat(data[0])\n+        user_id = int(data[1])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310717879,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -46,10 +46,9 @@\n             \"created_at\": \"2021-01-17\",\n         }\n \n         apr_prediction_dict = {\n-            \"approved\": \"true\",\n-            \"confidence\": 0.81,\n+            \"rating\": 0.81,\n         }\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n"
+                },
+                {
+                    "date": 1647310855514,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -38,8 +38,9 @@\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n+        rating = int(data[2])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310872922,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -35,8 +35,10 @@\n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n         print(f'read rating {message.value}')\n+        # Format:\n+        # <time>,<userid>,GET /rate/<movieid>=<rating>\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n         rating = int(data[2])\n"
+                },
+                {
+                    "date": 1647310878943,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -34,11 +34,11 @@\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate'):\n-        print(f'read rating {message.value}')\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n+        print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n         rating = int(data[2])\n"
+                },
+                {
+                    "date": 1647310895502,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -40,9 +40,9 @@\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n-        rating = int(data[2])\n+        rating = int(data[2].split('=')[-1])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310906485,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -33,9 +33,9 @@\n rec_model, movie_name_to_id = model.make_model()\n \n for message in create_consumer():\n     data = message.value.split(',')\n-    if data[-1].startswith('GET /rate'):\n+    if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n"
+                },
+                {
+                    "date": 1647310940796,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,8 +36,9 @@\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n+        movie_id, rating = map(int, data[-1][10:])\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n"
+                },
+                {
+                    "date": 1647310947053,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -41,9 +41,8 @@\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n-        rating = int(data[2].split('=')[-1])\n         apr_features_dict = {\n             \"amount\": 3918,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n"
+                },
+                {
+                    "date": 1647310962505,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -49,9 +49,9 @@\n             \"created_at\": \"2021-01-17\",\n         }\n \n         apr_prediction_dict = {\n-            \"rating\": 0.81,\n+            \"rating\": rating,\n         }\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n"
+                },
+                {
+                    "date": 1647310973074,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -42,9 +42,9 @@\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n         apr_features_dict = {\n-            \"amount\": 3918,\n+            \"created_at\": time,\n             \"owner\": \"John Doe\",\n             \"is_new\": \"true\",\n             \"created_at\": \"2021-01-17\",\n         }\n"
+                },
+                {
+                    "date": 1647310983233,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -43,9 +43,9 @@\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n         apr_features_dict = {\n             \"created_at\": time,\n-            \"owner\": \"John Doe\",\n+            \"user_id\": user_id,\n             \"is_new\": \"true\",\n             \"created_at\": \"2021-01-17\",\n         }\n \n"
+                },
+                {
+                    "date": 1647310997140,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -44,10 +44,9 @@\n         user_id = int(data[1])\n         apr_features_dict = {\n             \"created_at\": time,\n             \"user_id\": user_id,\n-            \"is_new\": \"true\",\n-            \"created_at\": \"2021-01-17\",\n+            \"movie_name\": movie_id,\n         }\n \n         apr_prediction_dict = {\n             \"rating\": rating,\n"
+                },
+                {
+                    "date": 1647311018546,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n-rec_model, movie_name_to_id = model.make_model()\n+rec_model, movie_name_to_id, movie_id_to_name = model.make_model()\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n"
+                },
+                {
+                    "date": 1647311049940,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n-rec_model, movie_name_to_id, movie_id_to_name = model.make_model()\n+rec_model, movie_id_to_model_id = model.make_model()\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n"
+                },
+                {
+                    "date": 1647311078315,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -50,8 +50,11 @@\n \n         apr_prediction_dict = {\n             \"rating\": rating,\n         }\n+        apr_actual_dict = {\n+            \"rating\": rating,\n+        }\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n             features=apr_features_dict,\n"
+                },
+                {
+                    "date": 1647311146469,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -46,11 +46,13 @@\n             \"created_at\": time,\n             \"user_id\": user_id,\n             \"movie_name\": movie_id,\n         }\n-\n+        out_rating = rec_model.get_similarity(\n+            user_id, movie_id\n+        ) * 4 + 1\n         apr_prediction_dict = {\n-            \"rating\": rating,\n+            \"rating\": ,\n         }\n         apr_actual_dict = {\n             \"rating\": rating,\n         }\n"
+                },
+                {
+                    "date": 1647311153731,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -46,9 +46,9 @@\n             \"created_at\": time,\n             \"user_id\": user_id,\n             \"movie_name\": movie_id,\n         }\n-        out_rating = rec_model.get_similarity(\n+        predicted_rating = rec_model.get_similarity(\n             user_id, movie_id\n         ) * 4 + 1\n         apr_prediction_dict = {\n             \"rating\": ,\n"
+                },
+                {
+                    "date": 1647311207022,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -60,7 +60,8 @@\n         apr_model.log_prediction(\n             id=apr_prediction_id,\n             features=apr_features_dict,\n             predictions=apr_prediction_dict,\n+            actual=apr_actual_dict,\n         )\n \n         apr_model.flush()\n"
+                },
+                {
+                    "date": 1647311219562,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -47,12 +47,12 @@\n             \"user_id\": user_id,\n             \"movie_name\": movie_id,\n         }\n         predicted_rating = rec_model.get_similarity(\n-            user_id, movie_id\n+            user_id, movie_id_to_model_id(movie_id)\n         ) * 4 + 1\n         apr_prediction_dict = {\n-            \"rating\": ,\n+            \"rating\": predicted_rating,\n         }\n         apr_actual_dict = {\n             \"rating\": rating,\n         }\n"
+                },
+                {
+                    "date": 1647311227012,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -47,9 +47,9 @@\n             \"user_id\": user_id,\n             \"movie_name\": movie_id,\n         }\n         predicted_rating = rec_model.get_similarity(\n-            user_id, movie_id_to_model_id(movie_id)\n+            user_id, movie_id_to_model_id[movie_id]\n         ) * 4 + 1\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n"
+                },
+                {
+                    "date": 1647311271538,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -36,9 +36,10 @@\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n-        movie_id, rating = map(int, data[-1][10:])\n+        movie_id, rating_raw = data[-1][10:].split('=')\n+        true_rating = int(rating_raw)\n         print(f'read rating {message.value}')\n         apr_prediction_id = data[0] + data[1]\n         time = datetime.fromisoformat(data[0])\n         user_id = int(data[1])\n"
+                },
+                {
+                    "date": 1647311392887,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -29,9 +29,9 @@\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_ratinglogger()\n-rec_model, movie_id_to_model_id = model.make_model()\n+rec_model, movie_id_to_model_id = model.make_model('dataset_partition.csv')\n \n for message in create_consumer():\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n@@ -54,9 +54,9 @@\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n         apr_actual_dict = {\n-            \"rating\": rating,\n+            \"rating\": true_rating,\n         }\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n"
+                },
+                {
+                    "date": 1647311413577,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,8 +32,9 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_id_to_model_id = model.make_model('dataset_partition.csv')\n \n for message in create_consumer():\n+    print(message.value)\n     data = message.value.split(',')\n     if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n"
+                },
+                {
+                    "date": 1647311512737,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -32,10 +32,9 @@\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_id_to_model_id = model.make_model('dataset_partition.csv')\n \n for message in create_consumer():\n-    print(message.value)\n-    data = message.value.split(',')\n+    data = message.value.decode().split(',')\n     if data[-1].startswith('GET /rate/'):\n         # Format:\n         # <time>,<userid>,GET /rate/<movieid>=<rating>\n         movie_id, rating_raw = data[-1][10:].split('=')\n"
                 }
             ],
             "date": 1647309347787,
