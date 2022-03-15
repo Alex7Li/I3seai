@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 55,
+            "activePatchIndex": 66,
             "patches": [
                 {
                     "date": 1647309347787,
@@ -228,6 +228,50 @@
                 {
                     "date": 1647312498836,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n from eat_kafka import get_data\n import model\n from datetime import datetime\n from consumer_factory import create_consumer\n-\n+# Evaluate performance of the model\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_ratinglogger():\n"
+                },
+                {
+                    "date": 1647313020812,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,9 +11,9 @@\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n     apr_model_version = \"sandbox-version3\"\n-    apr_model_type = \"ranking\"\n+    apr_model_type = \"numeric\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n         \"movie_name\": \"string\",\n"
+                },
+                {
+                    "date": 1647313031120,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,9 +10,9 @@\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"sandbox-version3\"\n+    apr_model_version = \"sandbox-version4\"\n     apr_model_type = \"numeric\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n"
+                },
+                {
+                    "date": 1647313056758,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,9 +10,9 @@\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"sandbox-version4\"\n+    apr_model_version = \"eval_performance_v4\"\n     apr_model_type = \"numeric\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n"
+                },
+                {
+                    "date": 1647313156302,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,9 +10,9 @@\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"eval_performance_v4\"\n+    apr_model_version = \"eval_performance_v1\"\n     apr_model_type = \"numeric\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n@@ -20,9 +20,8 @@\n     }\n     apr_predictions_schema = {\n         'rating': 'numeric'\n     }\n-\n     return aporia.create_model_version(\n         model_id=\"movie-recommendation\",\n         model_version=apr_model_version,\n         model_type=apr_model_type,\n"
+                },
+                {
+                    "date": 1647313245728,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,15 +20,16 @@\n     }\n     apr_predictions_schema = {\n         'rating': 'numeric'\n     }\n-    return aporia.create_model_version(\n+    apr_model = aporia.create_model_version(\n         model_id=\"movie-recommendation\",\n         model_version=apr_model_version,\n         model_type=apr_model_type,\n         features=apr_features_schema,\n         predictions=apr_predictions_schema\n     )\n+    return apr_model\n apr_model = aporia_setup_ratinglogger()\n rec_model, movie_id_to_model_id = model.make_model('dataset_partition.csv')\n \n for message in create_consumer():\n"
+                },
+                {
+                    "date": 1647313266037,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     }\n     apr_predictions_schema = {\n         'rating': 'numeric'\n     }\n-    apr_model = aporia.create_model_version(\n+    apr_model = aporia.create_model(\n         model_id=\"movie-recommendation\",\n         model_version=apr_model_version,\n         model_type=apr_model_type,\n         features=apr_features_schema,\n"
+                },
+                {
+                    "date": 1647313405397,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,9 +20,9 @@\n     }\n     apr_predictions_schema = {\n         'rating': 'numeric'\n     }\n-    apr_model = aporia.create_model(\n+    apr_model = aporia.create_model_version(\n         model_id=\"movie-recommendation\",\n         model_version=apr_model_version,\n         model_type=apr_model_type,\n         features=apr_features_schema,\n"
+                },
+                {
+                    "date": 1647313453322,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,8 +6,9 @@\n # Evaluate performance of the model\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n+\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n"
+                },
+                {
+                    "date": 1647313462523,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,9 +5,9 @@\n from consumer_factory import create_consumer\n # Evaluate performance of the model\n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n-            verbose=True)\n+            verbose=True, throw_errors=True)\n \n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n"
+                },
+                {
+                    "date": 1647313476376,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -12,9 +12,9 @@\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n     apr_model_version = \"eval_performance_v1\"\n-    apr_model_type = \"numeric\"\n+    apr_model_type = \"regression\"\n     apr_features_schema = {\n         \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n         \"movie_name\": \"string\",\n"
+                },
+                {
+                    "date": 1647314762612,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -58,9 +58,9 @@\n         apr_prediction_dict = {\n             \"rating\": predicted_rating,\n         }\n         apr_actual_dict = {\n-            \"rating\": true_rating,\n+            \"rating\": float(true_rating),\n         }\n         print(f'read rating {message.value}, {predicted_rating=} {true_rating=}')\n \n         apr_model.log_prediction(\n"
                 }
             ],
             "date": 1647309347787,
