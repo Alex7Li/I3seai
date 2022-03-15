@@ -1,0 +1,22 @@
+{
+    "sourceFile": "aporia_ratinglogger.pyp",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1647309328786,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1647309336060,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,9 @@\n+import aporia\n \n+aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n+            environment=\"local-dev\", \n+            verbose=True)\n def aporia_setup_ratinglogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n"
+                }
+            ],
+            "date": 1647309328786,
+            "name": "Commit-0",
+            "content": "\ndef aporia_setup_ratinglogger():\n    \"\"\"\n    Setup a schema in aporia to view the model.\n    \"\"\"\n    aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n                environment=\"local-dev\", \n                verbose=True)\n    apr_model_version = \"sandbox-version2\"\n    apr_model_type = \"ranking\"\n    apr_features_schema = {\n        \"created_at\": \"datetime\",\n        \"user_id\": \"numeric\",\n        \"movie_name\": \"categorical\",\n    }\n    apr_predictions_schema = {\n        'rating': 'numeric'\n    }\n\n    return aporia.create_model_version(\n        model_id=\"movie-recommendation\",\n        model_version=apr_model_version,\n        model_type=apr_model_type,\n        features=apr_features_schema,\n        predictions=apr_predictions_schema\n    )\napr_model = aporia_setup_ratinglogger()"
+        }
+    ]
+}

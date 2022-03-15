@@ -3,18 +3,22 @@ import aporia
 aporia.init(token="bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74", 
             environment="local-dev", 
             verbose=True)
-def aporia_setup_timelogger():
+def aporia_setup_ratinglogger():
     """
     Setup a schema in aporia to view the model.
     """
+    aporia.init(token="bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74", 
+                environment="local-dev", 
+                verbose=True)
     apr_model_version = "sandbox-version2"
     apr_model_type = "ranking"
     apr_features_schema = {
         "created_at": "datetime",
         "user_id": "numeric",
+        "movie_name": "categorical",
     }
     apr_predictions_schema = {
-        'response_time': 'numeric'
+        'rating': 'numeric'
     }
 
     return aporia.create_model_version(
@@ -24,7 +28,7 @@ def aporia_setup_timelogger():
         features=apr_features_schema,
         predictions=apr_predictions_schema
     )
-apr_model = aporia_setup_timelogger()
+apr_model = aporia_setup_ratinglogger()
 
 apr_prediction_id = "pred_1337"
 
