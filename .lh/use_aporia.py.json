@@ -3,11 +3,27 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 4,
             "patches": [
                 {
                     "date": 1647309317071,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1647315000177,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,17 +1,21 @@\n+# Evaluate Performace of System\n+\n import aporia\n+from consumer_factory import create_consumer\n+from datetime import datetime\n \n aporia.init(token=\"bcfdab4e222d1de5b441c793b0e415bc92a7e78c2bdf82b9dd104e03e2868f74\", \n             environment=\"local-dev\", \n             verbose=True)\n def aporia_setup_timelogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"sandbox-version2\"\n+    apr_model_version = \"system_perf1\"\n     apr_model_type = \"ranking\"\n     apr_features_schema = {\n-        \"created_at\": \"datetime\",\n+        # \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n     }\n     apr_predictions_schema = {\n         'response_time': 'numeric'\n@@ -25,25 +29,46 @@\n         predictions=apr_predictions_schema\n     )\n apr_model = aporia_setup_timelogger()\n \n-apr_prediction_id = \"pred_1337\"\n+for message in create_consumer():\n+    data = list(map(str.strip,message.value.decode().split(',')))\n \n-apr_features_dict = {\n-    \"amount\": 3918,\n-    \"owner\": \"John Doe\",\n-    \"is_new\": \"true\",\n-    \"created_at\": \"2021-01-17\",\n-}\n+    apr_prediction_id = data[0] + data[1]\n \n-apr_prediction_dict = {\n-    \"approved\": \"true\",\n-    \"confidence\": 0.81,\n-}\n \n-apr_model.log_prediction(\n-    id=apr_prediction_id,\n-    features=apr_features_dict,\n-    predictions=apr_prediction_dict,\n-)\n+    # apr_features_dict = None\n+    # apr_prediction_dict = None\n+    \n+    # if data[-1].startswith('GET /rate/'):\n+        \n+    #     in_time = datetime.fromisoformat(data[0])\n+    #     user_id = int(data[1])\n+        \n+    #     apr_prediction_id = data[0] + data[1]\n \n-apr_model.flush()\n+    #     apr_features_dict = {\n+    #         \"created_at\": in_time, #datetime.fromisoformat('2022-03-01T17:22:37')\n+    #         \"user_id\": user_id,\n+    #     }\n+        \n+\n+    if data[2].startswith('recommendation request'):\n+        \n+        response_time = int(data[-1]) #in milliseconds\n+        user_id = int(data[1])\n+\n+        apr_features_dict = {\n+            \"user_id\": user_id,\n+        }\n+        \n+        apr_prediction_dict = {\n+            'response_time': response_time,\n+        }\n+\n+        apr_model.log_prediction(\n+            id=apr_prediction_id,\n+            # features=apr_features_dict,\n+            predictions=apr_prediction_dict,\n+        )\n+    \n+        apr_model.flush()\n"
+                },
+                {
+                    "date": 1647315006490,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,10 +10,10 @@\n def aporia_setup_timelogger():\n     \"\"\"\n     Setup a schema in aporia to view the model.\n     \"\"\"\n-    apr_model_version = \"system_perf1\"\n-    apr_model_type = \"ranking\"\n+    apr_model_version = \"system_perf_v1\"\n+    apr_model_type = \"regression\"\n     apr_features_schema = {\n         # \"created_at\": \"datetime\",\n         \"user_id\": \"numeric\",\n     }\n"
+                },
+                {
+                    "date": 1647315057573,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -53,9 +53,9 @@\n         \n \n     if data[2].startswith('recommendation request'):\n         \n-        response_time = int(data[-1]) #in milliseconds\n+        response_time = int(data[-1][-3:]) #in milliseconds\n         user_id = int(data[1])\n \n         apr_features_dict = {\n             \"user_id\": user_id,\n"
+                },
+                {
+                    "date": 1647315087832,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -53,9 +53,9 @@\n         \n \n     if data[2].startswith('recommendation request'):\n         \n-        response_time = int(data[-1][-3:]) #in milliseconds\n+        response_time = int(data[-1][:-3]) #in milliseconds\n         user_id = int(data[1])\n \n         apr_features_dict = {\n             \"user_id\": user_id,\n@@ -66,9 +66,9 @@\n         }\n \n         apr_model.log_prediction(\n             id=apr_prediction_id,\n-            # features=apr_features_dict,\n+            features=apr_features_dict,\n             predictions=apr_prediction_dict,\n         )\n     \n         apr_model.flush()\n"
                 }
             ],
             "date": 1647309317071,

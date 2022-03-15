@@ -11,8 +11,8 @@ def aporia_setup_timelogger():
     """
     Setup a schema in aporia to view the model.
     """
-    apr_model_version = "sandbox-version2"
-    apr_model_type = "ranking"
+    apr_model_version = "system_perf_v1"
+    apr_model_type = "regression"
     apr_features_schema = {
         # "created_at": "datetime",
         "user_id": "numeric",
@@ -54,7 +54,7 @@ for message in create_consumer():
 
     if data[2].startswith('recommendation request'):
         
-        response_time = int(data[-1]) #in milliseconds
+        response_time = int(data[-1][:-3]) #in milliseconds
         user_id = int(data[1])
 
         apr_features_dict = {
@@ -67,7 +67,7 @@ for message in create_consumer():
 
         apr_model.log_prediction(
             id=apr_prediction_id,
-            # features=apr_features_dict,
+            features=apr_features_dict,
             predictions=apr_prediction_dict,
         )
     
